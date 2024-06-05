@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ratings-db-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ratings-db
+  template:
+    metadata:
+      labels:
+        app: ratings-db
+    spec:
+      containers:
+        - name: ratings-db-pod
+          image: postgres:15.0-alpine
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - secretRef:
+                name: ratings-db-credentials

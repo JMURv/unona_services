@@ -1,0 +1,24 @@
+#file: noinspection YAMLSchemaValidation
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: users-microsvc-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: users-microsvc
+  template:
+    metadata:
+      labels:
+        app: users-microsvc
+    spec:
+      containers:
+        - name: users-microsvc-pod
+          imagePullPolicy: Always
+          image: jmurv/users_svc:1.0
+          ports:
+            - containerPort: 50075
+          envFrom:
+            - secretRef:
+                name: users-db-credentials

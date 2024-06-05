@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "github.com/JMURv/unona/services/api/pb/services";
+import "google/protobuf/timestamp.proto";
+
+message Empty {}
+
+service Broadcast {
+  rpc CreateStream(Connect) returns (stream Notification);
+}
+
+message Connect {
+  string user_uuid = 1;
+  bool active = 2;
+}
+
+service Notifications {
+  rpc ListUserNotifications(ByUserIDRequest) returns (ListNotificationResponse);
+  rpc DeleteNotification(DeleteNotificationRequest) returns (Empty);
+  rpc DeleteAllNotifications(ByUserIDRequest) returns (Empty);
+}
+
+message Notification {
+  uint64 id = 1;
+  string type = 2;
+  uint64 user_id = 3;
+  uint64 receiver_id = 4;
+  string message = 5;
+  uint64 created_at = 6;
+}
+
+message ByUserIDRequest {
+  uint64 user_id = 1;
+}
+
+message ListNotificationResponse {
+  repeated Notification notifications = 1;
+}
+
+message DeleteNotificationRequest {
+  uint64 id = 1;
+}

@@ -1,0 +1,29 @@
+server:
+  mode: "prod"
+
+port: 50085
+serviceName: "media"
+registryAddr: "consul-service:8500"
+
+db:
+  host: "media-db-service"
+  port: 5432
+  user: "postgres"
+  password: "794613825Zx!"
+  database: "users_db"
+
+redis:
+  addr: "redis-media-service.default.svc.cluster.local:6379"
+  pass: ""
+
+kafka:
+  addrs: [ "kafka-service.default.svc.cluster.local:9092" ]
+  notificationTopic: "notifications"
+
+jaeger:
+  sampler:
+    type: "const"
+    param: 1
+  reporter:
+    LogSpans: true
+    LocalAgentHostPort: "jaeger-service.default.svc.cluster.local:6831"

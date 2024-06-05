@@ -1,0 +1,28 @@
+server:
+  mode: "dev"
+
+port: 50090
+serviceName: "notifications"
+
+db:
+  host: "localhost"
+  port: 5432
+  user: "postgres"
+  password: "794613825Zx!"
+  database: "notifications_db"
+
+redis:
+  addr: "localhost:6379"
+  pass: ""
+
+kafka:
+  addrs: [ "localhost:9092" ]
+  notificationTopic: "notifications"
+
+jaeger:
+  sampler:
+    type: "const"
+    param: 1
+  reporter:
+    LogSpans: true
+    LocalAgentHostPort: "localhost:6831"
