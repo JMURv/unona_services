@@ -2,14 +2,14 @@ server:
   mode: "dev"
 
 port: 50090
-serviceName: "notifications"
+serviceName: "services"
 
 db:
   host: "localhost"
   port: 5432
   user: "postgres"
   password: "794613825Zx!"
-  database: "notifications_db"
+  database: "services_db"
 
 redis:
   addr: "localhost:6379"

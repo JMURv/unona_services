@@ -29,6 +29,7 @@ type Pool struct {
 type Handler struct {
 	pb.BroadcastServer
 	pb.NotificationsServer
+	pb.EmailsServer
 	ctrl *controller.Controller
 	pool *Pool
 }
@@ -59,7 +60,7 @@ func (h *Handler) Broadcast(ctx context.Context, msg *mdl.Notification) error {
 	var statusCode codes.Code
 	start := time.Now()
 
-	// TODO Request to users to get receiver?
+	// TODO Request to users to get receiver username?
 	span := opentracing.GlobalTracer().StartSpan("notifications.Broadcast.handler")
 	ctx = opentracing.ContextWithSpan(ctx, span)
 	defer func() {
@@ -72,8 +73,8 @@ func (h *Handler) Broadcast(ctx context.Context, msg *mdl.Notification) error {
 		wg.Add(1)
 		go func(msg *mdl.Notification, conn *Connection) {
 			defer wg.Done()
-			if conn.active && conn.userUUID == msg.ReceiverID {
-				log.Printf("Sending message to: %v from %v\n", conn.userUUID, msg.UserID)
+			if conn.active && conn.userUUID == msg.ReceiverUUID {
+				log.Printf("Sending message to: %v from %v\n", conn.userUUID, msg.UserUUID)
 				if err := conn.stream.Send(mdl.NotificationToProto(msg)); err != nil {
 					log.Printf("Error with Stream: %v - Error: %v\n", conn.stream, err)
 					conn.active = false
@@ -87,7 +88,7 @@ func (h *Handler) Broadcast(ctx context.Context, msg *mdl.Notification) error {
 	return nil
 }
 
-func (h *Handler) ListUserNotifications(ctx context.Context, req *pb.ByUserIDRequest) (*pb.ListNotificationResponse, error) {
+func (h *Handler) ListUserNotifications(ctx context.Context, req *pb.ByUserUUIDRequest) (*pb.ListNotificationResponse, error) {
 	var statusCode codes.Code
 	start := time.Now()
 
@@ -98,13 +99,13 @@ func (h *Handler) ListUserNotifications(ctx context.Context, req *pb.ByUserIDReq
 		metrics.ObserveRequest(time.Since(start), int(statusCode), "ListUserNotifications")
 	}()
 
-	userID := req.UserId
-	if req == nil || userID == 0 {
+	userUUID := req.UserUuid
+	if req == nil || userUUID == "" {
 		statusCode = codes.InvalidArgument
 		return nil, status.Errorf(statusCode, "nil req or empty id")
 	}
 
-	n, err := h.ctrl.ListUserNotifications(ctx, userID)
+	n, err := h.ctrl.ListUserNotifications(ctx, uuid.MustParse(userUUID))
 	if err != nil {
 		statusCode = codes.Internal
 		span.SetTag("error", true)
@@ -141,7 +142,7 @@ func (h *Handler) DeleteNotification(ctx context.Context, req *pb.DeleteNotifica
 	return &pb.Empty{}, nil
 }
 
-func (h *Handler) DeleteAllNotifications(ctx context.Context, req *pb.ByUserIDRequest) (*pb.Empty, error) {
+func (h *Handler) DeleteAllNotifications(ctx context.Context, req *pb.ByUserUUIDRequest) (*pb.Empty, error) {
 	var statusCode codes.Code
 	start := time.Now()
 
@@ -152,12 +153,12 @@ func (h *Handler) DeleteAllNotifications(ctx context.Context, req *pb.ByUserIDRe
 		metrics.ObserveRequest(time.Since(start), int(statusCode), "DeleteAllNotifications")
 	}()
 
-	if req == nil || req.UserId == 0 {
+	if req == nil || req.UserUuid == "" {
 		statusCode = codes.InvalidArgument
 		return nil, status.Errorf(statusCode, "nil req or empty id")
 	}
 
-	if err := h.ctrl.DeleteAllNotifications(ctx, req.UserId); err != nil {
+	if err := h.ctrl.DeleteAllNotifications(ctx, uuid.MustParse(req.UserUuid)); err != nil {
 		statusCode = codes.Internal
 		span.SetTag("error", true)
 		return nil, status.Errorf(statusCode, err.Error())
@@ -165,4 +166,9 @@ func (h *Handler) DeleteAllNotifications(ctx context.Context, req *pb.ByUserIDRe
 
 	statusCode = codes.OK
 	return &pb.Empty{}, nil
+}
+
+func (h *Handler) VerifyUser(ctx context.Context, req *pb.VerifyUserRequest) (*pb.Empty, error) {
+	//TODO implement me
+	panic("implement me")
 }

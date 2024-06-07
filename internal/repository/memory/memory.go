@@ -4,6 +4,7 @@ import (
 	"context"
 	repo "github.com/JMURv/unona/services/internal/repository"
 	"github.com/JMURv/unona/services/pkg/model"
+	"github.com/google/uuid"
 	"github.com/opentracing/opentracing-go"
 	"sync"
 	"time"
@@ -18,7 +19,7 @@ func New() *Repository {
 	return &Repository{data: map[uint64]*model.Notification{}}
 }
 
-func (r *Repository) ListUserNotifications(ctx context.Context, userID uint64) (*[]*model.Notification, error) {
+func (r *Repository) ListUserNotifications(ctx context.Context, userUUID uuid.UUID) (*[]*model.Notification, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "notifications.ListUserNotifications.repo")
 	defer span.Finish()
 
@@ -26,7 +27,7 @@ func (r *Repository) ListUserNotifications(ctx context.Context, userID uint64) (
 	defer r.RUnlock()
 	n := make([]*model.Notification, 0, len(r.data))
 	for _, v := range r.data {
-		if v.ReceiverID == userID {
+		if v.ReceiverUUID == userUUID {
 			n = append(n, v)
 		}
 	}
@@ -43,11 +44,11 @@ func (r *Repository) CreateNotification(ctx context.Context, notify *model.Notif
 		return nil, repo.ErrTypeIsRequired
 	}
 
-	if notify.UserID == 0 {
+	if notify.UserUUID == uuid.Nil {
 		return nil, repo.ErrUserIDIsRequired
 	}
 
-	if notify.ReceiverID == 0 {
+	if notify.ReceiverUUID == uuid.Nil {
 		return nil, repo.ErrIRecieverIDIsRequired
 	}
 
@@ -74,14 +75,14 @@ func (r *Repository) DeleteNotification(ctx context.Context, notificationID uint
 	return nil
 }
 
-func (r *Repository) DeleteAllNotifications(ctx context.Context, userID uint64) error {
+func (r *Repository) DeleteAllNotifications(ctx context.Context, userUUID uuid.UUID) error {
 	span, _ := opentracing.StartSpanFromContext(ctx, "notifications.DeleteAllNotifications.repo")
 	defer span.Finish()
 
 	r.Lock()
 	defer r.Unlock()
 	for i, n := range r.data {
-		if userID == n.ReceiverID {
+		if userUUID == n.ReceiverUUID {
 			delete(r.data, i)
 			return nil
 		}

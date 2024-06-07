@@ -56,6 +56,7 @@ func main() {
 
 	srv := metric.ConfigureServerGRPC() // grpc.NewServer()
 	pb.RegisterNotificationsServer(srv, h)
+	pb.RegisterEmailsServer(srv, h)
 	pb.RegisterBroadcastServer(srv, h)
 	reflection.Register(srv)
 

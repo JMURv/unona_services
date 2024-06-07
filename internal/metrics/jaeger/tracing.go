@@ -1,7 +1,7 @@
 package jaeger
 
 import (
-	cfg "github.com/JMURv/unona/media/pkg/config"
+	cfg "github.com/JMURv/unona/services/pkg/config"
 	"github.com/opentracing/opentracing-go"
 	"github.com/uber/jaeger-client-go"
 	jaegercfg "github.com/uber/jaeger-client-go/config"

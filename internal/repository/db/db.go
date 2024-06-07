@@ -6,6 +6,7 @@ import (
 	repo "github.com/JMURv/unona/services/internal/repository"
 	conf "github.com/JMURv/unona/services/pkg/config"
 	"github.com/JMURv/unona/services/pkg/model"
+	"github.com/google/uuid"
 	"github.com/opentracing/opentracing-go"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -42,12 +43,12 @@ func New(conf *conf.DBConfig) *Repository {
 	return &Repository{conn: conn}
 }
 
-func (r *Repository) ListUserNotifications(ctx context.Context, userID uint64) (*[]*model.Notification, error) {
+func (r *Repository) ListUserNotifications(ctx context.Context, userUUID uuid.UUID) (*[]*model.Notification, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "notifications.ListUserNotifications.repo")
 	defer span.Finish()
 
 	var n []*model.Notification
-	if err := r.conn.Where("ReceiverID=?", userID).Find(&n).Error; err != nil {
+	if err := r.conn.Where("ReceiverID=?", userUUID).Find(&n).Error; err != nil {
 		return nil, err
 	}
 	return &n, nil
@@ -61,11 +62,11 @@ func (r *Repository) CreateNotification(ctx context.Context, notify *model.Notif
 		return nil, repo.ErrTypeIsRequired
 	}
 
-	if notify.UserID == 0 {
+	if notify.UserUUID == uuid.Nil {
 		return nil, repo.ErrUserIDIsRequired
 	}
 
-	if notify.ReceiverID == 0 {
+	if notify.ReceiverUUID == uuid.Nil {
 		return nil, repo.ErrIRecieverIDIsRequired
 	}
 
@@ -74,7 +75,6 @@ func (r *Repository) CreateNotification(ctx context.Context, notify *model.Notif
 	}
 
 	notify.CreatedAt = time.Now()
-
 	if err := r.conn.Create(notify).Error; err != nil {
 		return nil, err
 	}
@@ -92,11 +92,11 @@ func (r *Repository) DeleteNotification(ctx context.Context, notificationID uint
 	return nil
 }
 
-func (r *Repository) DeleteAllNotifications(ctx context.Context, userID uint64) error {
+func (r *Repository) DeleteAllNotifications(ctx context.Context, userUUID uuid.UUID) error {
 	span, _ := opentracing.StartSpanFromContext(ctx, "notifications.DeleteAllNotifications.repo")
 	defer span.Finish()
 
-	if err := r.conn.Where("ReceiverID=?", userID).Delete(&model.Notification{}).Error; err != nil {
+	if err := r.conn.Where("ReceiverID=?", userUUID).Delete(&model.Notification{}).Error; err != nil {
 		return err
 	}
 	return nil

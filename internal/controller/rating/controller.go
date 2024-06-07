@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/JMURv/unona/services/pkg/model"
+	"github.com/google/uuid"
 	"github.com/opentracing/opentracing-go"
 	"time"
 )
@@ -17,10 +18,10 @@ type CacheRepository interface {
 }
 
 type notificationsRepository interface {
-	ListUserNotifications(ctx context.Context, userID uint64) (*[]*model.Notification, error)
+	ListUserNotifications(ctx context.Context, userUUID uuid.UUID) (*[]*model.Notification, error)
 	CreateNotification(ctx context.Context, data *model.Notification) (*model.Notification, error)
 	DeleteNotification(ctx context.Context, notificationID uint64) error
-	DeleteAllNotifications(ctx context.Context, userID uint64) error
+	DeleteAllNotifications(ctx context.Context, userUUID uuid.UUID) error
 }
 
 type Controller struct {
@@ -35,12 +36,12 @@ func New(repo notificationsRepository, cache CacheRepository) *Controller {
 	}
 }
 
-func (c *Controller) ListUserNotifications(ctx context.Context, userID uint64) (*[]*model.Notification, error) {
+func (c *Controller) ListUserNotifications(ctx context.Context, userUUID uuid.UUID) (*[]*model.Notification, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "notifications.ListUserNotifications.ctrl")
 	ctx = opentracing.ContextWithSpan(ctx, span)
 	defer span.Finish()
 
-	res, err := c.repo.ListUserNotifications(ctx, userID)
+	res, err := c.repo.ListUserNotifications(ctx, userUUID)
 	if err != nil {
 		return nil, err
 	}
@@ -82,12 +83,12 @@ func (c *Controller) DeleteNotification(ctx context.Context, notificationID uint
 	return nil
 }
 
-func (c *Controller) DeleteAllNotifications(ctx context.Context, userID uint64) error {
+func (c *Controller) DeleteAllNotifications(ctx context.Context, userUUID uuid.UUID) error {
 	span, _ := opentracing.StartSpanFromContext(ctx, "notifications.DeleteAllNotifications.ctrl")
 	ctx = opentracing.ContextWithSpan(ctx, span)
 	defer span.Finish()
 
-	err := c.repo.DeleteAllNotifications(ctx, userID)
+	err := c.repo.DeleteAllNotifications(ctx, userUUID)
 	if err != nil {
 		return err
 	}
