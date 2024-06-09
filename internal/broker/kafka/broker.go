@@ -53,19 +53,18 @@ func (b *Broker) Start() {
 		log.Printf("Received message from topic %s: %s", msg.Topic, string(msg.Value))
 		switch msg.Topic {
 		case topic:
-			var n mdl.Notification
-			if err := json.Unmarshal(msg.Value, &n); err != nil {
+			n := &mdl.Notification{}
+			if err = json.Unmarshal(msg.Value, n); err != nil {
 				log.Printf("Error unmarshalling notification: %v", err)
 				continue
 			}
 
-			notification, err := b.ctrl.CreateNotification(ctx, &n)
+			notification, err := b.ctrl.CreateNotification(ctx, n)
 			if err != nil {
 				log.Printf("Error creating notification: %v", err)
 			}
 
-			err = b.handler.Broadcast(ctx, notification)
-			if err != nil {
+			if err := b.handler.Broadcast(ctx, notification); err != nil {
 				log.Printf("Error broadcasting notification: %v", err)
 			}
 		}

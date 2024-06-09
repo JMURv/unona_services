@@ -17,18 +17,70 @@ message Connect {
 }
 
 service Emails {
-  rpc VerifyUser (VerifyUserRequest) returns (Empty) {} // TODO сервис с доп. сервисами(отправка email-ов)?
+  rpc SendVerificationUserEmail (VerifyUserRequest) returns (Empty);
+  rpc SendLoginEmailMessage (SendLoginEmailMessageRequest) returns (Empty);
+  rpc SendActivateEmailCode (SendActivateEmailCodeRequest) returns (Empty);
+  rpc SendForgotPasswordEmail (SendForgotPasswordEmailRequest) returns (Empty);
+}
+
+message SendForgotPasswordEmailRequest {
+  string user_uuid = 1;
+  string email = 2;
+}
+
+message SendLoginEmailMessageRequest {
+  string captcha = 1;
+  string email = 2;
+  string password = 3;
+}
+
+message SendActivateEmailCodeRequest {
+  string captcha = 1;
+  string email = 2;
+  string key = 3;
 }
 
 message VerifyUserRequest {
   string user_uuid = 1;
   bytes photo = 2;
 }
+// TODO: сделать сервис аутентификации
+service Auth {
+  rpc Login (Empty) returns (Empty);
+  rpc Logout (LogoutRequest) returns (Empty);
+
+  rpc CheckLoginCode (CheckLoginCodeRequest) returns (Empty);
+  rpc CheckActivationCode (CheckActivationCodeRequest) returns (Empty);
+
+  rpc TokenObtainPair (Empty) returns (Empty);
+  rpc TokenRefresh (Empty) returns (Empty);
+  rpc TokenVerify (Empty) returns (Empty);
+  rpc DeleteAllTokens (Empty) returns (Empty);
+}
+
+message LogoutRequest {
+  string refresh_token = 1;
+}
+
+message CheckLoginCodeRequest {
+  string email = 1;
+  string code = 2;
+}
+
+message CheckActivationCodeRequest {
+  string code = 1;
+  string key = 2;
+}
 
 service Notifications {
   rpc ListUserNotifications(ByUserUUIDRequest) returns (ListNotificationResponse);
+  rpc ReadNotification(ReadNotificationRequest) returns (Empty);
   rpc DeleteNotification(DeleteNotificationRequest) returns (Empty);
   rpc DeleteAllNotifications(ByUserUUIDRequest) returns (Empty);
+}
+
+message ReadNotificationRequest {
+  string user_uuid = 1;
 }
 
 message Notification {
