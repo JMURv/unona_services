@@ -67,7 +67,7 @@ func (r *Repository) CreateNotification(ctx context.Context, notify *model.Notif
 	}
 
 	if notify.ReceiverUUID == uuid.Nil {
-		return nil, repo.ErrIRecieverIDIsRequired
+		return nil, repo.ErrIReceiverIDIsRequired
 	}
 
 	if notify.Message == "" {

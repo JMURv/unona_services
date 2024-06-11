@@ -3,14 +3,16 @@ package main
 import (
 	"fmt"
 	pb "github.com/JMURv/unona/services/api/pb"
-	kafka "github.com/JMURv/unona/services/internal/broker/kafka"
-	redis "github.com/JMURv/unona/services/internal/cache/redis"
+	"github.com/JMURv/unona/services/internal/broker/kafka"
+	"github.com/JMURv/unona/services/internal/cache/redis"
 	ctrl "github.com/JMURv/unona/services/internal/controller/rating"
 	handler "github.com/JMURv/unona/services/internal/handler/grpc"
 	tracing "github.com/JMURv/unona/services/internal/metrics/jaeger"
 	metrics "github.com/JMURv/unona/services/internal/metrics/prometheus"
+	"github.com/JMURv/unona/services/internal/smtp"
+
 	//mem "github.com/JMURv/unona/ratings/internal/repository/memory"
-	db "github.com/JMURv/unona/services/internal/repository/db"
+	"github.com/JMURv/unona/services/internal/repository/db"
 	cfg "github.com/JMURv/unona/services/pkg/config"
 	"google.golang.org/grpc/reflection"
 	"log"
@@ -51,12 +53,11 @@ func main() {
 	svc := ctrl.New(repo, cache)
 	h := handler.New(svc)
 
-	broker := kafka.New(&conf.Kafka, svc, h)
+	broker := kafka.New(&conf.Kafka, svc, h, smtp.New(&conf.Email))
 	go broker.Start()
 
 	srv := metric.ConfigureServerGRPC() // grpc.NewServer()
 	pb.RegisterNotificationsServer(srv, h)
-	pb.RegisterEmailsServer(srv, h)
 	pb.RegisterBroadcastServer(srv, h)
 	reflection.Register(srv)
 

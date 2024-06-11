@@ -57,7 +57,7 @@ func (m *Metric) Start(port int) {
 		},
 	))
 	log.Printf("starting http server for prometheus on port:%d", port)
-	http.ListenAndServe(fmt.Sprintf(":%d", port), mux)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), mux))
 }
 
 func (m *Metric) ConfigureServerGRPC() *grpc.Server {

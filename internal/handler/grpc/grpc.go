@@ -29,7 +29,6 @@ type Pool struct {
 type Handler struct {
 	pb.BroadcastServer
 	pb.NotificationsServer
-	pb.EmailsServer
 	ctrl *controller.Controller
 	pool *Pool
 }
@@ -73,7 +72,7 @@ func (h *Handler) Broadcast(ctx context.Context, msg *mdl.Notification) error {
 		wg.Add(1)
 		go func(msg *mdl.Notification, conn *Connection) {
 			defer wg.Done()
-			if conn.active && conn.userUUID == msg.ReceiverUUID {
+			if conn.active && (conn.userUUID == msg.ReceiverUUID || msg.ForBoth && conn.userUUID != msg.UserUUID) {
 				log.Printf("Sending message to: %v from %v\n", conn.userUUID, msg.UserUUID)
 				if err := conn.stream.Send(mdl.NotificationToProto(msg)); err != nil {
 					log.Printf("Error with Stream: %v - Error: %v\n", conn.stream, err)
@@ -166,9 +165,4 @@ func (h *Handler) DeleteAllNotifications(ctx context.Context, req *pb.ByUserUUID
 
 	statusCode = codes.OK
 	return &pb.Empty{}, nil
-}
-
-func (h *Handler) VerifyUser(ctx context.Context, req *pb.VerifyUserRequest) (*pb.Empty, error) {
-	//TODO implement me
-	panic("implement me")
 }

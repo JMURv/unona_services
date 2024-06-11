@@ -136,97 +136,8 @@ var Broadcast_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	Emails_VerifyUser_FullMethodName = "/user.Emails/VerifyUser"
-)
-
-// EmailsClient is the client API for Emails service.
-//
-// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type EmailsClient interface {
-	VerifyUser(ctx context.Context, in *VerifyUserRequest, opts ...grpc.CallOption) (*Empty, error)
-}
-
-type emailsClient struct {
-	cc grpc.ClientConnInterface
-}
-
-func NewEmailsClient(cc grpc.ClientConnInterface) EmailsClient {
-	return &emailsClient{cc}
-}
-
-func (c *emailsClient) VerifyUser(ctx context.Context, in *VerifyUserRequest, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
-	err := c.cc.Invoke(ctx, Emails_VerifyUser_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-// EmailsServer is the server API for Emails service.
-// All implementations must embed UnimplementedEmailsServer
-// for forward compatibility
-type EmailsServer interface {
-	VerifyUser(context.Context, *VerifyUserRequest) (*Empty, error)
-	mustEmbedUnimplementedEmailsServer()
-}
-
-// UnimplementedEmailsServer must be embedded to have forward compatible implementations.
-type UnimplementedEmailsServer struct {
-}
-
-func (UnimplementedEmailsServer) VerifyUser(context.Context, *VerifyUserRequest) (*Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method VerifyUser not implemented")
-}
-func (UnimplementedEmailsServer) mustEmbedUnimplementedEmailsServer() {}
-
-// UnsafeEmailsServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to EmailsServer will
-// result in compilation errors.
-type UnsafeEmailsServer interface {
-	mustEmbedUnimplementedEmailsServer()
-}
-
-func RegisterEmailsServer(s grpc.ServiceRegistrar, srv EmailsServer) {
-	s.RegisterService(&Emails_ServiceDesc, srv)
-}
-
-func _Emails_VerifyUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(VerifyUserRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(EmailsServer).VerifyUser(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Emails_VerifyUser_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EmailsServer).VerifyUser(ctx, req.(*VerifyUserRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-// Emails_ServiceDesc is the grpc.ServiceDesc for Emails service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var Emails_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "user.Emails",
-	HandlerType: (*EmailsServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "VerifyUser",
-			Handler:    _Emails_VerifyUser_Handler,
-		},
-	},
-	Streams:  []grpc.StreamDesc{},
-	Metadata: "api/pb/services.proto",
-}
-
-const (
 	Notifications_ListUserNotifications_FullMethodName  = "/user.Notifications/ListUserNotifications"
+	Notifications_ReadNotification_FullMethodName       = "/user.Notifications/ReadNotification"
 	Notifications_DeleteNotification_FullMethodName     = "/user.Notifications/DeleteNotification"
 	Notifications_DeleteAllNotifications_FullMethodName = "/user.Notifications/DeleteAllNotifications"
 )
@@ -236,6 +147,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type NotificationsClient interface {
 	ListUserNotifications(ctx context.Context, in *ByUserUUIDRequest, opts ...grpc.CallOption) (*ListNotificationResponse, error)
+	ReadNotification(ctx context.Context, in *ReadNotificationRequest, opts ...grpc.CallOption) (*Empty, error)
 	DeleteNotification(ctx context.Context, in *DeleteNotificationRequest, opts ...grpc.CallOption) (*Empty, error)
 	DeleteAllNotifications(ctx context.Context, in *ByUserUUIDRequest, opts ...grpc.CallOption) (*Empty, error)
 }
@@ -251,6 +163,15 @@ func NewNotificationsClient(cc grpc.ClientConnInterface) NotificationsClient {
 func (c *notificationsClient) ListUserNotifications(ctx context.Context, in *ByUserUUIDRequest, opts ...grpc.CallOption) (*ListNotificationResponse, error) {
 	out := new(ListNotificationResponse)
 	err := c.cc.Invoke(ctx, Notifications_ListUserNotifications_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *notificationsClient) ReadNotification(ctx context.Context, in *ReadNotificationRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, Notifications_ReadNotification_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -280,6 +201,7 @@ func (c *notificationsClient) DeleteAllNotifications(ctx context.Context, in *By
 // for forward compatibility
 type NotificationsServer interface {
 	ListUserNotifications(context.Context, *ByUserUUIDRequest) (*ListNotificationResponse, error)
+	ReadNotification(context.Context, *ReadNotificationRequest) (*Empty, error)
 	DeleteNotification(context.Context, *DeleteNotificationRequest) (*Empty, error)
 	DeleteAllNotifications(context.Context, *ByUserUUIDRequest) (*Empty, error)
 	mustEmbedUnimplementedNotificationsServer()
@@ -291,6 +213,9 @@ type UnimplementedNotificationsServer struct {
 
 func (UnimplementedNotificationsServer) ListUserNotifications(context.Context, *ByUserUUIDRequest) (*ListNotificationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListUserNotifications not implemented")
+}
+func (UnimplementedNotificationsServer) ReadNotification(context.Context, *ReadNotificationRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReadNotification not implemented")
 }
 func (UnimplementedNotificationsServer) DeleteNotification(context.Context, *DeleteNotificationRequest) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteNotification not implemented")
@@ -325,6 +250,24 @@ func _Notifications_ListUserNotifications_Handler(srv interface{}, ctx context.C
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(NotificationsServer).ListUserNotifications(ctx, req.(*ByUserUUIDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Notifications_ReadNotification_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReadNotificationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NotificationsServer).ReadNotification(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Notifications_ReadNotification_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NotificationsServer).ReadNotification(ctx, req.(*ReadNotificationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -375,6 +318,10 @@ var Notifications_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListUserNotifications",
 			Handler:    _Notifications_ListUserNotifications_Handler,
+		},
+		{
+			MethodName: "ReadNotification",
+			Handler:    _Notifications_ReadNotification_Handler,
 		},
 		{
 			MethodName: "DeleteNotification",

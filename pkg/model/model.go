@@ -12,4 +12,5 @@ type Notification struct {
 	ReceiverUUID uuid.UUID `json:"receiver_uuid"`
 	Message      string    `json:"message"`
 	CreatedAt    time.Time `json:"createdAt"`
+	ForBoth      bool      `json:"for_both"`
 }
